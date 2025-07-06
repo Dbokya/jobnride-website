@@ -1116,7 +1116,7 @@ function App() {
   const location = window.location.pathname;
   const [user, setUser] = useState(null); // null = not logged in, object = logged in
   const [showProfile, setShowProfile] = useState(false);
-
+  
   // On mount, check if user is already logged in (persisted by Firebase)
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
@@ -1136,7 +1136,7 @@ function App() {
   const handleLogin = (userData) => {
     setUser(userData);
     setShowProfile(false);
-    window.location.href = '/my-jobs';
+    
   };
 
   // Handler for logout

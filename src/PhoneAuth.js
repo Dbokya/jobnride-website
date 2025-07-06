@@ -142,10 +142,11 @@ function PhoneAuth({ onVerified, isPage }) {
       const result = await confirmationResult.confirm(otp);
       setSuccess('OTP verified!');
       setShowDownloadDialog(true);
-      if (onVerified) {
-        // Pass the Firebase user object to parent so header updates
-        await onVerified(result.user);
-      }
+      // if (onVerified) {
+      //   // Pass the Firebase user object to parent so header updates
+      //   await onVerified(result.user);
+      // }
+      navigate('/my-jobs'); // Redirect to My Jobs after successful verification
       setShowOTP(false);
       setOtp('');
     } catch (err) {
