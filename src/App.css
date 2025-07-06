@@ -61,7 +61,7 @@ body, .App {
   position: sticky;
   top: 0;
   z-index: 10;
-  border-radius: 0 0 24px 24px;
+  /* border-radius: 0 0 24px 24px; */
   backdrop-filter: blur(8px);
 }
 .navbar-logo {
@@ -247,7 +247,7 @@ body, .App {
   color: #b6c2e1;
   padding: 0;
   margin-top: 2rem;
-  border-radius: 24px 24px 0 0;
+  /* border-radius: 24px 24px 0 0; */
   box-shadow: 0 -4px 24px 0 rgba(30,144,255,0.10);
   backdrop-filter: blur(8px);
 }
@@ -340,7 +340,7 @@ body, .App {
   background: rgba(17,26,47,0.98);
   color: #b6c2e1;
   font-size: 1rem;
-  border-radius: 0 0 24px 24px;
+  /* border-radius: 0 0 24px 24px; */
 }
 
 /* Professional Auth Dialog Styles */

@@ -18,9 +18,11 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import AddIcon from '@mui/icons-material/Add';
 import { useNavigate } from 'react-router-dom';
-import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { collection, query, where, getDocs, deleteDoc, doc, getFirestore, getDoc, addDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import { getStoredUser } from './utils';
+import withAuthProtection from './components/HOCs/withAuthProtection';
+import JobPostingModal from './components/JobPostingModal/JobPostingModal';
 
 function MyJobs() {
   const [jobs, setJobs] = useState([]);
@@ -28,31 +30,41 @@ function MyJobs() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [deleting, setDeleting] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingJob, setEditingJob] = useState(null);
   const navigate = useNavigate();
 
   // Fetch jobs from Firestore where jobPosterId matches current user
-  useEffect(() => {
-    async function fetchJobs() {
-      setLoading(true);
-      setError('');
-      try {
-        const user = auth.currentUser;
-        let jobsList = [];
-        if (user && user.uid) {
-          const q = query(collection(db, 'jobs'), where('jobposterid', '==', user.uid));
-          const snap = await getDocs(q);
-          jobsList = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        }
-        setJobs(jobsList);
-      } catch (err) {
-        setError('Failed to fetch jobs.');
-        setJobs([]);
-      } finally {
-        setLoading(false);
+  async function fetchJobs() {
+    setLoading(true);
+    setError('');
+    try {
+      const user = auth.currentUser;
+      let jobsList = [];
+      console.log('-->',user, user?.uid);
+      
+      
+      if (user && user.uid) {
+        const q = query(collection(db, 'jobs'), where('jobposterid', '==', user.uid));
+        const snap = await getDocs(q);
+        console.log('snap', snap);
+        
+        jobsList = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       }
+      console.log(jobsList);
+      
+      setJobs(jobsList);
+    } catch (err) {
+      setError('Failed to fetch jobs.');
+      setJobs([]);
+    } finally {
+      setLoading(false);
     }
+  }
+  useEffect(() => {
+    
     fetchJobs();
-  }, []);
+  }, [auth.currentUser]);
 
   // Only show jobs from Firestore (no demo jobs)
   const jobsToDisplay = jobs;
@@ -66,6 +78,78 @@ function MyJobs() {
   }, [jobsToDisplay, selectedJobId]);
   const selectedJob = jobsToDisplay.find(j => j.id === selectedJobId) || jobsToDisplay[0];
 
+  const handlePostJob = async(formData) => {
+    console.log('Posting job with data:', formData);
+    
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    try {
+      const salaryRange = formData.salaryMin && formData.salaryMax
+        ? `$${formData.salaryMin},000 - $${formData.salaryMax},000`
+        : '';
+      const jobData = {
+        ...formData,
+        salaryRange,
+        postedDate: new Date().toISOString(),
+        status: 'active'
+      };
+      // Always set jobposterid and jobpostername for every job
+      const {uid} =auth.currentUser
+      jobData.jobposterid = uid;
+      const db = getFirestore();
+        const userRef = doc(db, 'users', uid);
+        const userSnap = await getDoc(userRef);
+      jobData.jobpostername = userSnap?.data()?.name || 'Demo User';
+      // Add job to Firestore 'jobs' collection (auto-generated id)
+      await addDoc(collection(db, 'jobs'), jobData);
+      setSuccess('Job posted successfully!');
+      await fetchJobs()
+      setIsModalOpen(false)
+    } catch (err) {
+      console.error('Error posting job:', err); // Log the actual error
+      setError('Failed to post job. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditJob = async (formData) => {
+    
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    try {
+      // Prepare salary range string
+      const salaryRange = formData.salaryMin && formData.salaryMax
+        ? `$${formData.salaryMin},000 - $${formData.salaryMax},000`
+        : '';
+      // Only update fields that are allowed to change
+      const jobData = {
+        ...formData,
+        salaryRange,
+        jobposterid: editingJob.jobposterid,
+        jobpostername: editingJob.jobpostername,
+        postedDate: editingJob.postedDate || new Date().toISOString(),
+        status: editingJob.status || 'active',
+      };
+      const dbInstance = getFirestore();
+      if (!editingJob || !editingJob.id) throw new Error('No job selected for editing.');
+      const jobRef = doc(dbInstance, 'jobs', editingJob.id);
+      const { updateDoc } = await import('firebase/firestore');
+      await updateDoc(jobRef, jobData);
+      setSuccess('Job updated successfully!');
+      await fetchJobs();
+      setIsModalOpen(false);
+      setEditingJob(null);
+    } catch (err) {
+      console.error('Error updating job:', err);
+      setError('Failed to update job. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   // If loading, show spinner
   if (loading) {
     return (
@@ -77,6 +161,7 @@ function MyJobs() {
 
   // Main layout always shows sidebar and header; only show job details box if jobs exist
   return (
+    <>
     <Box sx={{ width: '100vw', minHeight: '100vh', py: { xs: 2, md: 6 }, px: { xs: 0, md: 4 }, display: 'flex', gap: 0, bgcolor: '#181818', position: 'relative' }}>
       {/* Sidebar: Job Titles */}
       <Box sx={{
@@ -180,29 +265,7 @@ function MyJobs() {
               textTransform: 'none',
               '&:hover': { background: 'linear-gradient(90deg, #A400F1 60%, #2F013E 100%)' }
             }}
-            onClick={() => {
-              import('./PostJobForm').then(({ default: PostJobForm }) => {
-                const modalRoot = document.createElement('div');
-                modalRoot.id = 'post-job-modal-root';
-                document.body.appendChild(modalRoot);
-                const closeModal = () => {
-                  if (modalRoot) {
-                    document.body.removeChild(modalRoot);
-                  }
-                };
-                import('react-dom').then(ReactDOM => {
-                  ReactDOM.createRoot(modalRoot).render(
-                    <React.StrictMode>
-                      <Box sx={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', bgcolor: 'rgba(0,0,0,0.7)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Box sx={{ bgcolor: '#fff', borderRadius: 4, p: 3, minWidth: 340, maxWidth: '90vw', maxHeight: '90vh', overflowY: 'auto', boxShadow: 24 }}>
-                          <PostJobForm onClose={closeModal} />
-                        </Box>
-                      </Box>
-                    </React.StrictMode>
-                  );
-                });
-              });
-            }}
+            onClick={()=> setIsModalOpen(true)}
           >
             Post New Job
           </Button>
@@ -242,18 +305,54 @@ function MyJobs() {
               <Chip label={`Salary: ${selectedJob.salaryRange || 'Not disclosed'}`} sx={{ bgcolor: '#222', color: '#fff', fontWeight: 700, fontSize: 13, height: 24 }} />
               <Chip label={`Location: ${selectedJob.location || 'Not disclosed'}`} sx={{ bgcolor: '#222', color: '#fff', fontWeight: 700, fontSize: 13, height: 24 }} />
             </Box>
-            <Typography variant="body2" sx={{ color: '#fff', fontWeight: 500, mb: 1, minHeight: 20, fontSize: { xs: 13, md: 15 } }}>
+            <Typography variant="body2" sx={{ color: '#fff', fontWeight: 500, mb: 1, minHeight: 20, fontSize: { xs: 13, md: 15 }, textAlign:'justify' }}>
               {selectedJob.description}
             </Typography>
             <Box sx={{ position: 'absolute', right: 24, bottom: 18, display: 'flex', gap: 1 }}>
-              <Button variant="outlined" color="secondary" sx={{ color: '#fff', borderColor: '#fff', fontWeight: 700, borderRadius: 2, minWidth: 70, fontSize: 13, py: 0.5 }}>Edit</Button>
+              <Button variant="outlined" color="secondary" sx={{ color: '#fff', borderColor: '#fff', fontWeight: 700, borderRadius: 2, minWidth: 70, fontSize: 13, py: 0.5 }} onClick={()=>{setIsModalOpen(true); setEditingJob(selectedJob)}}>Edit</Button>
               <Button variant="contained" color="error" sx={{ color: '#fff', background: '#d32f2f', fontWeight: 700, borderRadius: 2, minWidth: 70, fontSize: 13, py: 0.5 }}>Delete</Button>
             </Box>
           </Box>
         )}
       </Box>
     </Box>
+    {isModalOpen && (
+        <JobPostingModal
+          key={editingJob ? editingJob.id : 'new'}
+          open={isModalOpen}
+          job={editingJob}
+          onSubmit={editingJob ? handleEditJob : handlePostJob}
+          onClose={() => {
+            setIsModalOpen(false);
+            setEditingJob(null);
+          }}
+        />
+      )}
+    </>
   );
 }
 
-export default MyJobs;
+export default withAuthProtection(MyJobs);
+// () => {
+//   import('./PostJobForm').then(({ default: PostJobForm }) => {
+//     const modalRoot = document.createElement('div');
+//     modalRoot.id = 'post-job-modal-root';
+//     document.body.appendChild(modalRoot);
+//     const closeModal = () => {
+//       if (modalRoot) {
+//         document.body.removeChild(modalRoot);
+//       }
+//     };
+//     import('react-dom').then(ReactDOM => {
+//       ReactDOM.createRoot(modalRoot).render(
+//         <React.StrictMode>
+//           <Box sx={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', bgcolor: 'rgba(0,0,0,0.7)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+//             <Box sx={{ bgcolor: '#fff', borderRadius: 4, p: 3, minWidth: 340, maxWidth: '90vw', maxHeight: '90vh', overflowY: 'auto', boxShadow: 24 }}>
+//               <PostJobForm onClose={closeModal} />
+//             </Box>
+//           </Box>
+//         </React.StrictMode>
+//       );
+//     });
+//   });
+// }

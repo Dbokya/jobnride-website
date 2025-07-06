@@ -27,6 +27,9 @@ import SavedJobsPage from './pages/SavedJobsPage';
 import MenuIcon from '@mui/icons-material/Menu';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
+import BrowseJobsNew from './pages/BrowseJobsNew';
+import MainHeader from './components/MainHeader/MainHeader';
+import { getAuth, signOut } from 'firebase/auth';
 
 // Create a dark theme instance with custom colors from Flutter app
 const darkTheme = createTheme({
@@ -1137,9 +1140,14 @@ function App() {
   };
 
   // Handler for logout
-  const handleLogout = () => {
-    setUser(null);
-    setShowProfile(false);
+  const handleLogout = async() => {
+    // setUser(null);
+    // setShowProfile(false);
+    
+    const auth = getAuth();
+    signOut(auth).then(()=>{
+      alert('User Logged out successfully')
+    })
     window.location.href = '/';
   };
 
@@ -1147,7 +1155,8 @@ function App() {
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
       <Router>
-        <Header user={user} onLogout={handleLogout} />
+        {/* <Header user={user} onLogout={handleLogout} /> */}
+        <MainHeader user={user}/>
         <div className="App" style={{ background: isLoginPage ? 'transparent' : '#1A1024', minHeight: '100vh' }}>
           <Routes>
             <Route 

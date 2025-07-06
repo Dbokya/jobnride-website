@@ -13,8 +13,8 @@ import {
   Chip
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { db } from './firebase';
-import { collection, addDoc } from 'firebase/firestore';
+import { auth, db } from './firebase';
+import { collection, addDoc, getFirestore, doc, getDoc } from 'firebase/firestore';
 
 const industryOptions = [
   'IT', 'Finance', 'Healthcare', 'Education', 'Manufacturing', 'Retail', 'Hospitality', 'Construction', 'Transportation', 'Media', 'Telecom', 'Energy', 'Government', 'Legal', 'Real Estate', 'Agriculture', 'Automotive', 'Aerospace', 'Biotechnology', 'Chemicals', 'Consulting', 'Consumer Goods', 'Defense', 'Design', 'E-commerce', 'Electronics', 'Engineering', 'Entertainment', 'Environmental', 'Fashion', 'Food & Beverage', 'Insurance', 'Logistics', 'Marine', 'Mining', 'Nonprofit', 'Pharmaceuticals', 'Printing', 'Public Relations', 'Publishing', 'Recreation', 'Security', 'Sports', 'Travel', 'Utilities', 'Waste Management', 'Wholesale', 'Other'
@@ -126,8 +126,12 @@ function PostJobForm({ onClose, jobPosterId, jobPosterName }) {
         status: 'active'
       };
       // Always set jobposterid and jobpostername for every job
-      jobData.jobposterid = 'bLKKzsPaAGdo0mDEJdANQkGvTr23';
-      jobData.jobpostername = jobPosterName || 'Demo User';
+      const {uid} =auth.currentUser
+      jobData.jobposterid = uid;
+      const db = getFirestore();
+        const userRef = doc(db, 'users', uid);
+        const userSnap = await getDoc(userRef);
+      jobData.jobpostername = userSnap?.data()?.name || 'Demo User';
       // Add job to Firestore 'jobs' collection (auto-generated id)
       await addDoc(collection(db, 'jobs'), jobData);
       setSuccess('Job posted successfully!');
