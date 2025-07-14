@@ -1,90 +1,65 @@
 import React, { useState } from 'react';
-import { auth, db } from '../../firebase';
-import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
-import { useNavigate } from 'react-router-dom'; 
+import { auth } from '../../firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
+import { FaEye, FaEyeSlash } from 'react-icons/fa'; // 👁 Professional icons
+import '../admin.css';
 
 function AdminLogin() {
-  const [phone, setPhone] = useState('');
-  const [otpSent, setOtpSent] = useState(false);
-  const [confirmationResult, setConfirmationResult] = useState(null);
-  const [otp, setOtp] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPass, setShowPass] = useState(false);
   const navigate = useNavigate();
 
-  const setupRecaptcha = () => {
-    // ✅ Use getApp() to pass the Firebase app to RecaptchaVerifier
-    window.recaptchaVerifier = new RecaptchaVerifier(
-      'recaptcha',
-      {
-        'size': 'invisible',
-        'callback': (response) => {
-          console.log('reCAPTCHA solved');
-        },
-      },// ✅ Use app instead of auth or auth.app
-      auth
-    );
-  };
-
-  const sendOtp = async () => {
-    if (!phone.startsWith('+91')) {
-      alert('Please enter phone number in correct format (e.g. +91...)');
+  const handleLogin = async () => {
+    if (!email || !password) {
+      alert('Please enter email and password.');
       return;
     }
 
-    setupRecaptcha();
-    const appVerifier = window.recaptchaVerifier;
-
     try {
-      const result = await signInWithPhoneNumber(auth, phone, appVerifier);
-      setConfirmationResult(result);
-      setOtpSent(true);
+      await signInWithEmailAndPassword(auth, email, password);
+      navigate('/admin/dashboard');
     } catch (err) {
-      console.error("OTP sending error:", err);
-      alert("Failed to send OTP: " + err.message);
-    }
-  };
-
-  const verifyOtp = async () => {
-    try {
-      const result = await confirmationResult.confirm(otp);
-      const user = result.user;
-
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      if (userDoc.exists() && userDoc.data().isAdmin) {
-        navigate('/admin/dashboard');
-      } else {
-        alert("You are not authorized to access the admin panel.");
-        auth.signOut();
-      }
-    } catch (err) {
-      console.error("OTP verification failed", err);
-      alert("Invalid OTP");
+      console.error('Login error:', err);
+      alert('Invalid email or password. Please try again.');
     }
   };
 
   return (
-    <div className="admin-login">
-      <h2>Admin Login</h2>
-      {!otpSent ? (
-        <>
+    <div className="login-container">
+      <div className="login-card">
+        <h2 className="login-title">Admin Login</h2>
+
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email"
+          className="login-input"
+        />
+
+        <div className="password-wrapper">
           <input
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="+91..."
+            type={showPass ? 'text' : 'password'}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Password"
+            className="login-input password-input"
           />
-          <div id="recaptcha"></div>
-          <button onClick={sendOtp}>Send OTP</button>
-        </>
-      ) : (
-        <>
-          <input
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-            placeholder="Enter OTP"
-          />
-          <button onClick={verifyOtp}>Verify OTP</button>
-        </>
-      )}
+          <span
+            className="eye-icon"
+            onClick={() => setShowPass(!showPass)}
+            title={showPass ? 'Hide password' : 'Show password'}
+          >
+            {showPass ? <FaEyeSlash /> : <FaEye />}
+          </span>
+        </div>
+
+        <button onClick={handleLogin} className="login-button">Login</button>
+
+        <p className="login-note">Only authorized admins can access this panel.</p>
+      </div>
     </div>
   );
 }

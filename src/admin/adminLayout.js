@@ -1,20 +1,44 @@
 import React from "react";
 import { Outlet, NavLink } from "react-router-dom";
-import "./admin.css"; // Reuse user CSS or create custom styles
+import {
+  LayoutDashboard,
+  Users,
+  CarFront,
+  Briefcase,
+  FileWarning,
+  Settings,
+  LifeBuoy
+} from "lucide-react";
+import "./admin.css";
 
 function AdminLayout() {
+  const navItems = [
+    { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { to: "/admin/users", label: "Users", icon: Users },
+    { to: "/admin/rides", label: "Rides", icon: CarFront },
+    { to: "/admin/jobs", label: "Jobs", icon: Briefcase },
+    { to: "/admin/reports", label: "Reports", icon: FileWarning },
+    { to: "/admin/settings", label: "Settings", icon: Settings },
+    { to: "/admin/support", label: "Support", icon: LifeBuoy }
+  ];
+
   return (
     <div className="admin-container">
       <aside className="admin-sidebar">
-        <h2>Admin Panel</h2>
-        <nav>
-          <NavLink to="/admin/dashboard">Dashboard</NavLink>
-          <NavLink to="/admin/users">Users</NavLink>
-          <NavLink to="/admin/rides">Rides</NavLink>
-          <NavLink to="/admin/jobs">Jobs</NavLink>
-          <NavLink to="/admin/reports">Reports</NavLink>
-          <NavLink to="/admin/settings">Settings</NavLink>
-          <NavLink to="/admin/support">Support</NavLink>
+        <h2 className="admin-title">🚀 JobNRide Admin</h2>
+        <nav className="admin-nav">
+          {navItems.map(({ to, label, icon: Icon }) => (
+            <NavLink
+              key={to}
+              to={to}
+              className={({ isActive }) =>
+                `admin-link ${isActive ? "active-link" : ""}`
+              }
+            >
+              <Icon className="admin-icon" />
+              {label}
+            </NavLink>
+          ))}
         </nav>
       </aside>
       <main className="admin-main">

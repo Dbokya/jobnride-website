@@ -30,7 +30,7 @@ function AdminRoutes() {
             { path: "reports", element: <ReportsAndAnalytics /> },
             { path: "settings", element: <Settings /> },
             { path: "support", element: <SupportAndFeedback /> },
-            { index: true, element: <Navigate to="login" /> },
+            { index: true, element: <Navigate to="dashboard" /> },
           ],
         }
       ],

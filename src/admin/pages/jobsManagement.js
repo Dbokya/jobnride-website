@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../../firebase';
 import { collection, onSnapshot, updateDoc, doc } from 'firebase/firestore';
+import '../admin.css'; // Assuming styles are in admin.css
 
 export default function JobsManagement() {
   const [jobs, setJobs] = useState([]);
@@ -18,24 +19,26 @@ export default function JobsManagement() {
 
   return (
     <div>
-      <h2>Jobs Management</h2>
-      <table>
-        <thead><tr><th>Title</th><th>Company</th><th>Posted By</th><th>Status</th><th>Actions</th></tr></thead>
-        <tbody>
-          {jobs.map(j => (
-            <tr key={j.id}>
-              <td>{j.title}</td>
-              <td>{j.company}</td>
-              <td>{j.jobpostername}</td>
-              <td>{j.approved ? 'Approved' : 'Pending'}</td>
-              <td>
-                <button onClick={() => approve(j, true)}>Approve</button>
-                <button onClick={() => approve(j, false)}>Reject</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <h2 className="section-title">Jobs Management</h2>
+      <div className="cards-grid">
+        {jobs.map(j => (
+          <div className="job-card" key={j.id}>
+            <h3>{j.title}</h3>
+            <p><strong>Company:</strong> {j.company}</p>
+            <p><strong>Posted By:</strong> {j.jobpostername}</p>
+            <p>
+              <strong>Status:</strong>{' '}
+              <span className={`status-badge ${j.approved ? 'approved' : 'pending'}`}>
+                {j.approved ? 'Approved' : 'Pending'}
+              </span>
+            </p>
+            <div className="card-actions">
+              <button className="btn-approve" onClick={() => approve(j, true)}>Approve</button>
+              <button className="btn-reject" onClick={() => approve(j, false)}>Reject</button>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
