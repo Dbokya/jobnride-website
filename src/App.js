@@ -27,6 +27,9 @@ import SavedJobsPage from './pages/SavedJobsPage';
 import MenuIcon from '@mui/icons-material/Menu';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
+import AdminRoutes from './admin/adminRoutes';
+import { AdminAuthProvider } from "./admin/adminAuthContext";
+
 
 // Create a dark theme instance with custom colors from Flutter app
 const darkTheme = createTheme({
@@ -1147,6 +1150,7 @@ function App() {
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
       <Router>
+      <AdminAuthProvider>
         <Header user={user} onLogout={handleLogout} />
         <div className="App" style={{ background: isLoginPage ? 'transparent' : '#1A1024', minHeight: '100vh' }}>
           <Routes>
@@ -1223,9 +1227,11 @@ function App() {
               element={<UserProfile user={user} onLogout={handleLogout} onClose={() => window.history.back()} />}
             />
             <Route path="/saved-jobs" element={<SavedJobsPage />} />
+            <Route path="/admin/*" element={<AdminRoutes />} />
           </Routes>
         </div>
         <Footer />
+        </AdminAuthProvider>
       </Router>
     </ThemeProvider>
   );
