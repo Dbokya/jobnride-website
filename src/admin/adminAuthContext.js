@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { auth, db } from '../firebase'; // ✅ use 'db' instead of 'firestore'
 import { doc, getDoc } from 'firebase/firestore';
 
@@ -13,11 +13,15 @@ export function AdminAuthProvider({ children }) {
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
       if (firebaseUser) {
+        try{
         const docRef = doc(db, 'users', firebaseUser.uid); // ✅ db here
         const snap = await getDoc(docRef);
         if (snap.exists() && snap.data().isAdmin) {
           setAdminUser(firebaseUser);
         } else {
+          setAdminUser(null);
+        }}catch(error){
+          console.error("Error fetching admin user:", error);
           setAdminUser(null);
         }
       } else {
@@ -29,8 +33,13 @@ export function AdminAuthProvider({ children }) {
     return () => unsubscribe();
   }, []);
 
+  const value = useMemo(()=> ({
+    adminUser,
+    loading,
+  }), [adminUser, loading]);
+
   return (
-    <AdminAuthContext.Provider value={{ adminUser, loading }}>
+    <AdminAuthContext.Provider value={value}>
       {children}
     </AdminAuthContext.Provider>
   );

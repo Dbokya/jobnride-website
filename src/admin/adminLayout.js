@@ -1,5 +1,5 @@
 import React from "react";
-import { Outlet, NavLink } from "react-router-dom";
+import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
@@ -7,11 +7,25 @@ import {
   Briefcase,
   FileWarning,
   Settings,
-  LifeBuoy
+  LifeBuoy,
+  LogOut,
+  Power
 } from "lucide-react";
 import "./admin.css";
+import useInactivityLogout from "./useInactivityLogout";
+import { auth } from "../firebase";
 
 function AdminLayout() {
+  const navigate = useNavigate();
+  // Check if the user is authenticated and redirect if not 
+  useInactivityLogout();
+
+  const handleLogout = () => {
+    auth.signOut().then(() => {
+      navigate('/admin/login');
+    });
+  };
+  // Navigation items for the admin sidebar
   const navItems = [
     { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { to: "/admin/users", label: "Users", icon: Users },
@@ -40,6 +54,10 @@ function AdminLayout() {
             </NavLink>
           ))}
         </nav>
+        <button className="logout-button" onClick={handleLogout}>
+          <Power className="logout-icon" />
+          Logout
+        </button>
       </aside>
       <main className="admin-main">
         <Outlet />
