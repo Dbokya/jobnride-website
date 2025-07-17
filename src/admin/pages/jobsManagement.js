@@ -42,7 +42,7 @@ export default function JobsManagement() {
     <div className="jobs-container">
       <div className="jobs-header">
         <h2 className="section-title">Jobs Management</h2>
-        <div className="job-count">Total Jobs: {jobs.length}</div>
+        <div className="job-count"><h3>Total Jobs: {jobs.length}</h3></div>
       </div>
 
       <div className="search-filter-box">

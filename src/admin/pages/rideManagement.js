@@ -37,7 +37,7 @@ export default function RideManagement() {
     <div className="ride-container">
       <div className="ride-header">
         <h1 className="ride-title">Ride Management</h1>
-        <div className="ride-count">Total Rides: {rides.length}</div>
+        <div className="ride-count"><h3>Total Rides: {rides.length}</h3></div>
       </div>
 
       <div className="search-filter-box">

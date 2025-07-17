@@ -228,12 +228,14 @@
   font-weight: bold;
   margin-bottom: 30px;
   text-align: center;
+  color: white;
 }
 
 .admin-nav {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
+  
 }
 
 .admin-link {
@@ -249,7 +251,7 @@
 }
 
 .admin-link:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.404);
 }
 
 .active-link {
@@ -490,10 +492,6 @@
 }
 
 
-.dashboard {
-  padding: 2rem;
-  font-family: 'Poppins', sans-serif;
-}
 
 .stats-grid {
   display: flex;
@@ -687,7 +685,7 @@
 
 .admin-dashboard {
   padding: 30px;
-  font-family: 'Segoe UI', sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #f5f6fc;
 }
 
@@ -1266,8 +1264,8 @@
 }
 
 .job-count {
-  font-size: 14px;
-  color: #666;
+  font-size: 0.875rem; /* text-sm */
+  color: #3c3f47; /* text-gray-500 */
 }
 
 .search-filter-box {
@@ -1382,4 +1380,180 @@
   background: #fff;
   border-radius: 10px;
   border: 1px solid #f0f0f0;
+}
+
+
+/* Admin Dashboard CSS */
+.admin-dashboard {
+  text-align: left;
+  font-size: 1rem;
+  color: #1a1a1a; /* Force default text color */
+  background-color: hsla(0, 2%, 38%, 0); /* Ensure white background */
+}
+
+h2, h3, p, span, li {
+  color: #1a1a1a; /* Ensures all text is visible */
+}
+
+.icon-blue {
+  background-color: #dbeafe;
+  color: #2563eb;
+}
+.icon-green {
+  background-color: #dcfce7;
+  color: #16a34a;
+}
+.icon-purple {
+  background-color: #ede9fe;
+  color: #7c3aed;
+}
+.icon-orange {
+  background-color: #ffedd5;
+  color: #ea580c;
+}
+.text-green {
+  color: #16a34a;
+}
+
+.shadow {
+  /* border: 1px solid #e5e7eb; */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Chart + Revenue Section */
+.dashboard-graph-row {
+  display: grid;
+  grid-template-columns: 5fr 5fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.chart-card,
+.revenue-overview-card {
+  background-color: #ffffff;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.24);
+}
+
+.stat-card {
+  /* font-size: 1rem;
+  font-weight: 400rem; */
+  max-height: 180px;
+  background-color: #ffffffda;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  transition: box-shadow 100s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 100px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.24);
+}
+
+.stat-card:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+}
+.stat-header {
+  font-size: 1.2rem; /* text-sm */
+  font-weight: 100rem;
+  color :#634b4b;
+  display: flex;
+  justify-content: space-between;
+  align-items: left;
+}
+.stat-icon {
+  margin-right: 1rem;
+  width: 3rem;
+  height: 3rem;
+  padding: 0.5rem;
+  border-radius: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+
+.revenue-overview-card h3 {
+  margin-top: 0.4rem;
+  margin-bottom: 1.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  text-align: left;
+}
+
+.revenue-item {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  text-align: left;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.24);
+  background-color: #f3f4f6;
+}
+
+.revenue-item.highlight {
+  font-weight: 600;
+  color: #7c3aed;
+}
+.revenue-item.highlighted {
+  background-color: #f3e8ff;
+  border-left: 4px solid #7c3aed;
+  padding-left: 1rem;
+}
+
+/* Recent activity CSS */
+
+.recent-activity {
+  margin-top: 2rem;
+  padding: 0.55rem 1.5rem;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.85rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.24);
+
+}
+
+.recent-activity h3 {
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-align: left;
+}
+
+.activity-item {
+  text-align: left;
+  padding: 0.15rem 1rem;
+  margin-bottom: 0.75rem;
+  border-left: 4px solid #ccc;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+}
+
+.activity-item.success {
+  border-color: #16a34a;
+  background-color: #cce0d396;
+}
+
+.activity-item.info {
+  border-color: #2563eb;
+  background-color: #b9bedb71;
+}
+
+.activity-item.warning {
+  border-color: #9717ca;
+  background-color: #dac0da85;
+}
+
+.activity-message {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 0rem;
+}
+
+.activity-time {
+  font-size: 0.85rem;
+  color: #6b7280; /* Gray-600 */
 }

@@ -21,13 +21,14 @@ function AdminLogin() {
     try {
       setLoggingIn(true);
       const result = await signInWithEmailAndPassword(auth, email, password);
-      console.log("Logged in user :", auth.currentUser)
       const user = result.user;
       navigate('/admin/dashboard');
       setLoggingIn(false); // Reset loading state
     } catch (err) {
       console.error('Login error:', err);
       alert('Invalid email or password. Please try again.');
+      navigate('/admin/login'); // Redirect to login on error
+      setLoggingIn(false); // Reset loading state
     }
   };
 

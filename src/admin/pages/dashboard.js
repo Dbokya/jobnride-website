@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { db } from "../../firebase";
-import { collection, getDocs, Timestamp } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 import { Users, Briefcase, Car, LineChart as ChartIcon } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -27,16 +27,12 @@ export default function Dashboard() {
 
   useEffect(() => {
     const fetchStats = async () => {
-      const [uSnap, rSnap, jSnap, transSnap] = await Promise.all([
+      const [uSnap, rSnap, jSnap] = await Promise.all([
         getDocs(collection(db, "users")),
         getDocs(collection(db, "rides")),
         getDocs(collection(db, "jobs")),
-        getDocs(collection(db, "transactions")),
       ]);
-      console.log("Users:", uSnap.size);
-      console.log("Rides:", rSnap.size);
-      console.log("Jobs:", jSnap.size);
-      console.log("Transactions:", transSnap.docs.map(doc => doc.data()));
+
       const now = new Date();
       const startOfToday = new Date(now.setHours(0, 0, 0, 0));
       const startOfWeek = new Date(now);
@@ -48,22 +44,6 @@ export default function Dashboard() {
       let monthRevenue = 0;
 
       const dailyData = {};
-
-      transSnap.forEach((doc) => {
-        const data = doc.data();
-        const createdAt = data.createdAt?.toDate?.() || new Date();
-        const amount = parseFloat(data.amount || 0);
-
-        if (createdAt >= startOfToday) todayRevenue += amount;
-        if (createdAt >= startOfWeek) weekRevenue += amount;
-        if (createdAt >= startOfMonth) monthRevenue += amount;
-
-        const day = createdAt.toLocaleDateString("en-US", { weekday: "short" });
-        if (!dailyData[day]) {
-          dailyData[day] = { revenue: 0 };
-        }
-        dailyData[day].revenue += amount;
-      });
 
       const chartData = Object.entries(dailyData).map(([day, values]) => ({
         day,
@@ -89,40 +69,37 @@ export default function Dashboard() {
       <h2 className="dashboard-heading">Dashboard</h2>
 
       <div className="stats-cards">
-        <div className="stat-card bg-white border shadow-sm">
+        <div className="stat-card shadow">
           <div className="stat-header">
             <p>Total Users</p>
-            <Users className="stat-icon bg-blue-100 text-blue-600" />
+            <Users className="stat-icon icon-blue" />
           </div>
           <h3>{stats.users}</h3>
-          <span className="stat-growth text-green-500">+12%</span>
         </div>
 
-        <div className="stat-card bg-white border shadow-sm">
+        <div className="stat-card shadow">
           <div className="stat-header">
             <p>Active Jobs</p>
-            <Briefcase className="stat-icon bg-green-100 text-green-600" />
+            <Briefcase className="stat-icon icon-green" />
           </div>
           <h3>{stats.jobs}</h3>
-          <span className="stat-growth text-green-500">+8%</span>
         </div>
 
-        <div className="stat-card bg-white border shadow-sm">
+        <div className="stat-card shadow">
           <div className="stat-header">
             <p>Total Rides</p>
-            <Car className="stat-icon bg-purple-100 text-purple-600" />
+            <Car className="stat-icon icon-purple" />
           </div>
           <h3>{stats.rides}</h3>
-          <span className="stat-growth text-green-500">+15%</span>
+          
         </div>
 
-        <div className="stat-card bg-white border shadow-sm">
+        <div className="stat-card shadow">
           <div className="stat-header">
             <p>Monthly Revenue</p>
-            <ChartIcon className="stat-icon bg-orange-100 text-orange-600" />
+            <ChartIcon className="stat-icon icon-orange" />
           </div>
           <h3>₹{stats.monthRevenue.toLocaleString()}</h3>
-          <span className="stat-growth text-green-500">+22%</span>
         </div>
       </div>
 
@@ -153,11 +130,21 @@ export default function Dashboard() {
 
       <div className="recent-activity">
         <h3>Recent Activity</h3>
-        <ul>
-          <li className="activity success">New user registered (2 mins ago)</li>
-          <li className="activity info">New ride posted (5 mins ago)</li>
-          <li className="activity warning">Job application submitted</li>
-        </ul>
+
+        <div className="activity-item success">
+          <div className="activity-message">New user registered</div>
+          <div className="activity-time">2 mins ago</div>
+        </div>
+
+        <div className="activity-item info">
+          <div className="activity-message">New ride posted</div>
+          <div className="activity-time">5 mins ago</div>
+        </div>
+
+        <div className="activity-item warning">
+          <div className="activity-message">Job application submitted</div>
+          <div className="activity-time">Just now</div>
+        </div>
       </div>
     </div>
   );
